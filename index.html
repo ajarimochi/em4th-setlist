@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMセトリジェネレータ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&family=Plus+Jakarta+Sans:wght@700;800&family=Yuji+Syuku&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/html2canvas/dist/html2canvas.min.js"></script>
+
+    <style>
+        /* =========================================
+           1. カラーテーマ（ブルー固定）
+        ========================================= */
+        :root {
+            --theme-bg-gradient: linear-gradient(145deg, #0c004f, #001369, #e10000);
+            --theme-title-highlight: linear-gradient(transparent 60%, rgba(111, 177, 252, 0.4) 60%);
+            --theme-badge-shadow: rgba(67, 100, 247, 0.6);
+            --theme-num-bg: #ffb13c;
+        }
+
+        .taiban-song {
+            color: #e70017 !important;
+            background: #fff3f3;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: #f5f5f5;
+            padding: 5px;
+            margin: 0;
+            color: #333;
+            padding-bottom: 80px;
+        }
+
+        .layout-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 30px;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 10px;
+        }
+
+        @media (max-width: 1050px) {
+            .layout-wrapper {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        /* --- 1. 入力画面のスタイル --- */
+        .container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 1.3rem;
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--theme-num-bg);
+            transition: color 0.3s ease;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        select {
+            width: 100%;
+            max-width: 100%;
+            display: block;
+            padding: 8px 4px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .radio-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .radio-group label {
+            font-weight: normal;
+            margin: 0;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .radio-group input {
+            margin-right: 4px;
+        }
+
+        .song-block {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 5px 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .song-title-div {
+            border-left: 3px solid var(--theme-num-bg);
+            padding-left: 10px;
+            margin-bottom: 10px;
+            transition: border-color 0.3s ease;
+        }
+
+        .artist-name-div {
+            margin-top: 8px;
+            background: #fff3cd;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ffeeba;
+        }
+
+        .singer-div {
+            margin-top: 10px;
+            border-top: 1px dashed #ccc;
+            padding-top: 10px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+            transition: 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .song-block-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        .song-block-title {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .mode-select {
+            font-size: 0.75rem;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .mode-select label {
+            font-weight: normal;
+            margin: 0;
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .mode-select-separator {
+            border-left: 1px solid #ccc;
+            padding-left: 5px;
+        }
+
+        .remove-song-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 4px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            margin-left: auto;
+        }
+
+       
+
+        /* 既存の .prev-title のスタイルから font-family と font-weight を削除・調整した場合は以下のようになります */
+        #prevLiveTitle {
+            /* フォントを「佑字 肅」に指定し、代替フォントとして明朝体を設定 */
+            font-family: 'Yuji Syuku', 'Yu Mincho', 'YuMincho', 'Hiragino Mincho ProN', serif;
+            font-weight: 400; /* 筆文字本来の美しさを出すために標準ウェイトを指定 */
+            font-size: 20px;
+            letter-spacing: 0.08em; /* 筆文字が詰まりすぎないよう余白を少し広げる */
+            margin-bottom: 12px;
+            line-height: 1.2;
+            display: inline-block;
+            padding: 0 8px;
+            color: var(--theme-num-bg);
+        }
+        .prev-title h1 {
+            font-family: inherit;
+            font-weight: inherit;
+            margin: 0;
+            line-height: 1.2;
+        }
+        #prevLiveTitle h2 {
+            margin-bottom: 5px;
+        }
+
+        #prevLiveTitle h2 {
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        /* --- 2. 画像生成エリア（プレビュー） --- */
+        #setlistPreviewContainer {
+            /* 修正: 固定幅をレスポンシブな幅に変更し、画面外に飛ばす指定を削除 */
+            width: 100%;
+            max-width: 500px;
+            flex-shrink: 0;
+            background: var(--theme-bg-gradient);
+            padding: 0;
+            box-sizing: border-box;
+            color: #0F172A;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            /* 見栄え向上のためはみ出しを隠す */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            /* プレビューエリアに影を追加して浮き上がらせる */
+        }
+
+        .prev-inner {
+            background-color: transparent; /* 白背景を削除 */
+            padding: 5px 15px 15px;
+            margin: 15px 30px;
+            flex-grow: 1;
+            border: var(--theme-num-bg) solid 1px;
+            border-radius: 10px;
+        }
+
+        .prev-header {
+            text-align: center;
+            /* border-bottom: 2px solid rgba(192, 192, 192, 0.3); */
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+        }
+
+        
+        .prev-date-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .prev-time-badge {
+            color: #FFFFFF;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 4px;
+            letter-spacing: 0.05em;
+            flex-shrink: 0;
+            background-color: #F97316;
+        }
+
+        .badge-night {
+            background-color: #1E3A8A;
+        }
+
+        .prev-date-venue {
+            background-color: #1E293B;
+            color: #FFFFFF;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 4px;
+        }
+
+        .prev-encore-label {
+            align-self: flex-start;
+            margin-top: 10px;
+            margin-bottom: 0px;
+        }
+
+        .prev-song-list {
+            background-color: #ffffff82; /* 白背景をここに移動 */
+            display: flex; 
+            flex-direction: column;
+            padding: 12px; /* 背景色がつくため、文字がフチに付かないよう内側余白を追加 */
+            border-radius: 3px;
+            /* box-shadow: 3px 3px 0px #1E293B; */
+        }
+
+        .prev-song-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+            border-bottom: 1px dashed #E2E8F0;
+        }
+
+        .prev-song-item:last-child {
+            border-bottom: none;
+        }
+
+        .prev-song-num-badge {
+            display: flex;
+            width: 26px;
+            height: 26px;
+            flex-shrink: 0;
+            /* border: 2px solid #1E293B;
+            border-radius: 6px;
+            box-shadow: 2px 2px 0px var(--theme-badge-shadow); */
+            overflow: hidden;
+            align-self: flex-start;
+            margin-top: 2px;
+        }
+
+        .prev-song-num-val {
+            color: #ff8400;
+            font-weight: 800;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+        }
+
+        .prev-song-main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .prev-song-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .prev-song-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #0F172A;
+            line-height: 1.2;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .prev-extra-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .prev-badge {
+            font-size: 9px;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        .badge-cover {
+            color: #888888;
+        }
+
+        .prev-singers-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .badge-singer {
+            border: none;
+            flex-shrink: 0;
+            text-align: center;
+            line-height: 1.3;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #FFFFFF;
+        }
+
+        .singer-all {
+            background-color: #E3342F;
+        }
+
+        .singer-color-1 {
+            background-color: #f74b17;
+        }
+
+        .singer-color-2 {
+            background-color: #1c149b;
+        }
+
+        .singer-color-3 {
+            background-color: #fd7e14;
+        }
+
+        .singer-color-4 {
+            background-color: #007bff;
+        }
+
+        .singer-color-5 {
+            background-color: #28a745;
+        }
+
+        .singer-color-6 {
+            background-color: #20c997;
+        }
+
+        .singer-color-7 {
+            background-color: #fad1e1;
+            color: #0F172A;
+        }
+
+        .singer-color-8 {
+            background-color: #e2d9f3;
+            color: #0F172A;
+        }
+
+        .footer {
+            margin-top: auto;
+            padding: 10px 15px;
+            background-color: #1E293B;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .footer-text {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 9px;
+            color: #94A3B8;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+        }
+
+        #generatedImageArea {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 20px 0;
+        }
+
+        #generatedImageArea img {
+            max-width: 90%;
+            max-height: 80%;
+            border: 4px solid white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+        }
+
+        #closeImageBtn {
+            background: white;
+            color: #333;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="layout-wrapper">
+        <div class="container" id="inputContainer">
+            <h1>EMセトリジェネレータ</h1>
+
+            <div class="form-group">
+                <label>イベント形式</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="liveType" value="oneman" checked onclick="toggleLiveType()">
+                        ワンマン</label>
+                    <label><input type="radio" name="liveType" value="fes" onclick="toggleLiveType()"> フェス</label>
+                </div>
+            </div>
+
+            <div class="form-group hidden" id="fesSingerGroup">
+                <label>歌唱者エントリー（出演者一覧）</label>
+                <div id="globalSingerContainer"></div>
+                <button type="button" class="btn btn-secondary"
+                    style="margin-top: 5px; padding: 6px 12px; font-size: 0.85rem;" onclick="addGlobalSingerInput()">＋
+                    歌唱者を追加</button>
+            </div>
+
+            <hr>
+
+            <div id="setlistContainer"></div>
+
+            <button class="btn btn-secondary" onclick="addSongBlock()">＋ 曲を追加</button>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-secondary"
+                    style="flex: 1; padding: 15px; margin-top: 0; font-weight: bold; background-color: #1E293B;"
+                    onclick="copySetlistText()">
+                    テキストでコピー
+                </button>
+                <button class="btn btn-primary" style="flex: 1.5; font-size: 1.1rem; padding: 15px; margin-top: 0;"
+                    onclick="generateSetlistImage()">
+                    画像を生成して保存
+                </button>
+            </div>
+
+            <div style="text-align: center; margin-top: 15px;">
+                <a href="#" style="color: #dc3545; font-size: 0.85rem; text-decoration: underline;"
+                    onclick="clearStorageData(); return false;">保存データをすべて削除して初期化</a>
+            </div>
+        </div>
+
+        <div id="setlistPreviewContainer">
+            <div class="prev-inner">
+                <div class="prev-header">
+                    <!-- ▼ 公演情報はここで直接HTML編集してください ▼ -->
+                    <!-- <div class="prev-title" id="prevLiveTitle"><h2>平山笑美 4th Oneman Live</h2><h1>錦秋ノ一閃</h1></div> -->
+                    <div class="prev-title" id="prevLiveTitle">
+                        <h2>4th Oneman Live</h2>
+                        <h1>錦秋ノ一閃</h1>
+                    </div>
+                    <div class="prev-details">
+                        <div class="prev-date-wrap">
+                            <!-- 昼夜の区分が不要な場合はこの span を削除、または display:none にしてください -->
+                            <span class="prev-date-venue" id="prevDateVenue">2026/11/15 ＠ 新宿 ReNY</span>
+                        </div>
+                    </div>
+                    <!-- ▲ ここまで ▲ -->
+                </div>
+                <div class="prev-song-list" id="prevSongListArea"></div>
+            </div>
+            <div class="footer">
+                <div class="footer-text">THIS IS AN UNOFFICIAL, FAN-MADE WORK. CREATED BY ナンプラー@nannpla</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="generatedImageArea">
+        <p style="color:white; margin-bottom:10px;">画像を長押しして保存してください</p>
+        <div id="finalImagePlace"></div>
+        <button id="closeImageBtn" onclick="closeImageArea()">入力に戻る</button>
+    </div>
+
+    <script src="songList.js"></script>
+
+    <script>
+        let songCount = 0;
+        let globalSingerCount = 0;
+        let isRestoring = false;
+
+        function toggleLiveType() {
+            const isFes = document.querySelector('input[name="liveType"]:checked').value === 'fes';
+            const singerGroup = document.getElementById('fesSingerGroup');
+            singerGroup.className = isFes ? 'form-group' : 'form-group hidden';
+            updateAllSingers();
+        }
+
+        function addGlobalSingerInput(initialValue = '') {
+            globalSingerCount++;
+            const currentSingerId = globalSingerCount;
+
+            const container = document.getElementById('globalSingerContainer');
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'global-singer-input';
+            input.id = `globalSingerInput_${currentSingerId}`;
+            input.value = initialValue;
+            input.placeholder = `歌唱者名 ${currentSingerId}`;
+            input.style.marginBottom = '6px';
+
+            input.oninput = function () { syncGlobalSinger(currentSingerId); };
+            container.appendChild(input);
+
+            const songBlocks = document.querySelectorAll('#setlistContainer .song-block');
+            songBlocks.forEach(block => {
+                const idNum = block.id.split('_')[1];
+                addCheckboxToSongBlock(idNum, currentSingerId, initialValue);
+            });
+        }
+
+        function addCheckboxToSongBlock(songId, singerId, singerName = '') {
+            const group = document.getElementById(`singerCheckboxGroup_${songId}`);
+            if (!group) return;
+
+            const label = document.createElement('label');
+            label.id = `singerLabel_${songId}_${singerId}`;
+            label.style.display = singerName.trim() === '' ? 'none' : 'inline-flex';
+
+            label.innerHTML = `
+        <input type="checkbox" name="singer_${songId}" value="${singerName}" data-singer-id="${singerId}" onchange="renderPreviewBeforeCapture()">
+        <span class="singer-name-text">${singerName}</span>
+    `;
+
+            const allLabel = document.getElementById(`singerAllLabel_${songId}`);
+            group.insertBefore(label, allLabel);
+        }
+
+        function syncGlobalSinger(singerId) {
+            const name = document.getElementById(`globalSingerInput_${singerId}`).value;
+            const songBlocks = document.querySelectorAll('#setlistContainer .song-block');
+
+            songBlocks.forEach(block => {
+                const songId = block.id.split('_')[1];
+                const label = document.getElementById(`singerLabel_${songId}_${singerId}`);
+                if (!label) return;
+
+                const checkbox = label.querySelector('input');
+                const textSpan = label.querySelector('.singer-name-text');
+
+                checkbox.value = name;
+                textSpan.innerText = name;
+
+                if (name.trim() === '') {
+                    label.style.display = 'none';
+                    checkbox.checked = false;
+                } else {
+                    label.style.display = 'inline-flex';
+                }
+            });
+
+            renderPreviewBeforeCapture();
+        }
+
+        function addSongBlock() {
+            songCount++;
+            const container = document.getElementById('setlistContainer');
+            const block = document.createElement('div');
+            block.className = 'song-block';
+            block.id = `songBlock_${songCount}`;
+
+            let optionsHtml = '<option value="">-- 曲を選択 --</option>';
+            if (typeof songList !== 'undefined') {
+                songList.forEach(song => {
+                    const taibanClass = song.taibanFlag ? ' class="taiban-song"' : '';
+                    const subInfoStyle = song.subInfo ? ' style="color: #007bff;"' : '';
+                    let emoji = song.taibanFlag ? "🤝" : (song.subInfo ? "🎸" : "");
+                    const firstKana = song.firstKana || "";
+                    const displayName = firstKana ? `${firstKana}-${emoji}${song.name}` : `-&emsp;${emoji}${song.name}`;
+                    optionsHtml += `<option value="${song.name}"${taibanClass}${subInfoStyle}>${displayName}</option>`;
+                });
+            }
+
+            block.innerHTML = `
+        <div class="song-block-header">
+            <div class="song-block-title">M-${songCount}</div>
+            <div class="mode-select">
+                <label><input type="radio" name="mode_${songCount}" value="normal" checked onclick="toggleSongMode(${songCount})"> 持ち曲</label>
+                <label><input type="radio" name="mode_${songCount}" value="cover" onclick="toggleSongMode(${songCount})"> カバー</label>
+                <label class="mode-select-separator"><input type="checkbox" id="acoustic_${songCount}" onchange="renderPreviewBeforeCapture()"> アコ</label>
+                <label><input type="checkbox" id="encore_${songCount}" onchange="renderPreviewBeforeCapture()"> En.</label>
+            </div>
+            <button class="remove-song-btn" onclick="removeSongBlock(${songCount})">削除</button>
+        </div>
+
+        <div class="song-title-div" id="songTitleDiv_${songCount}">
+            <select id="songSelect_${songCount}" onchange="renderPreviewBeforeCapture()">${optionsHtml}</select>
+            <input type="text" id="songInput_${songCount}" class="hidden" placeholder="曲名を入力" oninput="renderPreviewBeforeCapture()">
+            
+            <div id="artistNameDiv_${songCount}" class="artist-name-div hidden">
+                <label style="font-size:0.8rem; color:#856404; margin-bottom:2px;">アーティスト名（元曲）</label>
+                <input type="text" id="artistName_${songCount}" placeholder="例: 坂本真綾" oninput="renderPreviewBeforeCapture()">
+            </div>
+        </div>
+
+        <div class="singer-div hidden" id="singerDiv_${songCount}">
+            <label style="display:block; margin-bottom:5px; font-size:0.85rem; color:#555;">歌唱者を選択</label>
+            <div class="radio-group" id="singerCheckboxGroup_${songCount}">
+                <label id="singerAllLabel_${songCount}"><input type="checkbox" name="singer_${songCount}" value="全員" onchange="renderPreviewBeforeCapture()"> <span class="singer-name-text" style="font-weight:bold; color:#E3342F;">全員</span></label>
+            </div>
+        </div>
+    `;
+            container.appendChild(block);
+
+            for (let i = 1; i <= globalSingerCount; i++) {
+                const inputEl = document.getElementById(`globalSingerInput_${i}`);
+                const currentName = inputEl ? inputEl.value : '';
+                addCheckboxToSongBlock(songCount, i, currentName);
+            }
+
+            updateSingerOptions(songCount);
+            renderPreviewBeforeCapture();
+        }
+
+        function removeSongBlock(id) {
+            const block = document.getElementById(`songBlock_${id}`);
+            if (block) { block.remove(); renderPreviewBeforeCapture(); }
+        }
+
+        function toggleSongMode(id) {
+            const mode = document.querySelector(`input[name="mode_${id}"]:checked`).value;
+            const select = document.getElementById(`songSelect_${id}`);
+            const input = document.getElementById(`songInput_${id}`);
+            const artistDiv = document.getElementById(`artistNameDiv_${id}`);
+
+            if (mode === 'cover') {
+                select.classList.add('hidden'); input.classList.remove('hidden'); artistDiv.classList.remove('hidden');
+            } else {
+                select.classList.remove('hidden'); input.classList.add('hidden'); artistDiv.classList.add('hidden');
+            }
+            renderPreviewBeforeCapture();
+        }
+
+        function updateAllSingers() {
+            document.querySelectorAll('#setlistContainer .song-block').forEach(block => {
+                updateSingerOptions(block.id.split('_')[1]);
+            });
+            renderPreviewBeforeCapture();
+        }
+
+        function updateSingerOptions(id) {
+            const isFes = document.querySelector('input[name="liveType"]:checked').value === 'fes';
+            const singerDiv = document.getElementById(`singerDiv_${id}`);
+            if (!singerDiv) return;
+
+            if (isFes) {
+                singerDiv.classList.remove('hidden');
+            } else {
+                singerDiv.classList.add('hidden');
+            }
+        }
+
+        function saveCurrentData() {
+            if (isRestoring) return;
+
+            const data = {
+                liveType: document.querySelector('input[name="liveType"]:checked')?.value || "oneman",
+                singers: [],
+                songs: []
+            };
+
+            document.querySelectorAll('.global-singer-input').forEach(input => {
+                data.singers.push(input.value);
+            });
+
+            document.querySelectorAll('#setlistContainer .song-block').forEach(block => {
+                const idNum = block.id.split('_')[1];
+                const modeRadio = block.querySelector(`input[name="mode_${idNum}"]:checked`);
+                const checkedSingers = [];
+
+                block.querySelectorAll(`input[name="singer_${idNum}"]:checked`).forEach(cb => {
+                    const sId = cb.getAttribute('data-singer-id');
+                    if (sId) {
+                        checkedSingers.push(sId);
+                    } else if (cb.value === "全員") {
+                        checkedSingers.push("all");
+                    }
+                });
+
+                data.songs.push({
+                    mode: modeRadio ? modeRadio.value : "normal",
+                    acoustic: document.getElementById(`acoustic_${idNum}`).checked,
+                    encore: document.getElementById(`encore_${idNum}`).checked,
+                    songSelect: document.getElementById(`songSelect_${idNum}`).value,
+                    songInput: document.getElementById(`songInput_${idNum}`).value,
+                    artistName: document.getElementById(`artistName_${idNum}`).value,
+                    singers: checkedSingers
+                });
+            });
+            localStorage.setItem('yk_generator_v3_simple', JSON.stringify(data));
+        }
+
+        function loadSavedData() {
+            const rawData = localStorage.getItem('yk_generator_v3_simple');
+            if (!rawData) return false;
+
+            try {
+                isRestoring = true;
+                const data = JSON.parse(rawData);
+
+                if (data.liveType) {
+                    document.querySelector(`input[name="liveType"][value="${data.liveType}"]`).checked = true;
+                    toggleLiveType();
+                }
+
+                if (data.singers && data.singers.length > 0) {
+                    data.singers.forEach(singerName => addGlobalSingerInput(singerName));
+                }
+
+                if (data.songs && data.songs.length > 0) {
+                    data.songs.forEach(song => {
+                        addSongBlock();
+                        const currentId = songCount;
+                        document.querySelector(`input[name="mode_${currentId}"][value="${song.mode}"]`).checked = true;
+                        toggleSongMode(currentId);
+
+                        document.getElementById(`acoustic_${currentId}`).checked = song.acoustic;
+                        document.getElementById(`encore_${currentId}`).checked = song.encore;
+                        document.getElementById(`songSelect_${currentId}`).value = song.songSelect || "";
+                        document.getElementById(`songInput_${currentId}`).value = song.songInput || "";
+                        document.getElementById(`artistName_${currentId}`).value = song.artistName || "";
+
+                        if (song.singers) {
+                            song.singers.forEach(singerRef => {
+                                if (singerRef === "all") {
+                                    const cbAll = document.querySelector(`input[name="singer_${currentId}"][value="全員"]`);
+                                    if (cbAll) cbAll.checked = true;
+                                } else {
+                                    const cbIndividual = document.querySelector(`#singerLabel_${currentId}_${singerRef} input`);
+                                    if (cbIndividual) cbIndividual.checked = true;
+                                }
+                            });
+                        }
+                    });
+                } else {
+                    for (let i = 0; i < 5; i++) { addSongBlock(); }
+                }
+
+                isRestoring = false;
+                return true;
+            } catch (e) {
+                console.error("復元失敗:", e);
+                isRestoring = false;
+                return false;
+            }
+        }
+
+        function clearStorageData() {
+            if (confirm("データをすべて削除し、初期状態に戻しますか？")) {
+                localStorage.removeItem('yk_generator_v3_simple');
+                window.location.reload();
+            }
+        }
+
+        function renderPreviewBeforeCapture() {
+            const isFes = document.querySelector('input[name="liveType"]:checked').value === 'fes';
+
+            const songListArea = document.getElementById('prevSongListArea');
+            songListArea.innerHTML = "";
+
+            let displayIndex = 1;
+
+            document.querySelectorAll('#setlistContainer .song-block').forEach((block) => {
+                const idNum = block.id.split('_')[1];
+                const mode = block.querySelector(`input[name="mode_${idNum}"]:checked`).value;
+                const isAcoustic = document.getElementById(`acoustic_${idNum}`).checked;
+                const isEncore = document.getElementById(`encore_${idNum}`).checked;
+
+                let finalTitle = "", coverArtist = "";
+
+                if (mode === 'normal') {
+                    finalTitle = document.getElementById(`songSelect_${idNum}`).value;
+                    if (typeof songList !== 'undefined') {
+                        const sData = songList.find(s => s.name === finalTitle);
+                        if (sData && sData.subInfo) coverArtist = sData.subInfo;
+                    }
+                } else {
+                    finalTitle = document.getElementById(`songInput_${idNum}`).value;
+                    coverArtist = document.getElementById(`artistName_${idNum}`).value;
+                }
+
+                if (!finalTitle.trim()) return;
+
+                if (isEncore) {
+                    const encoreDiv = document.createElement('div');
+                    encoreDiv.className = 'prev-date-venue prev-encore-label';
+                    encoreDiv.innerText = 'En.';
+                    songListArea.appendChild(encoreDiv);
+                }
+
+                const songItem = document.createElement('div');
+                songItem.className = 'prev-song-item';
+
+                const mainHtml = `
+            <div class="prev-song-num-badge">
+                <div class="prev-song-num-val">${displayIndex.toString().padStart(2, '0')}</div>
+            </div>
+            <div class="prev-song-main-content">
+                <div class="prev-song-content">
+                    <span class="prev-song-title">${finalTitle} ${isAcoustic ? '<span class="prev-badge badge-cover">(アコースティックver.)</span>' : ''}</span>
+                    ${coverArtist ? `<div class="prev-extra-info"><span class="prev-badge badge-cover">${coverArtist}</span></div>` : ''}
+                </div>
+                <div class="prev-singers-wrap" id="prevSingers_${idNum}"></div>
+            </div>
+        `;
+                songItem.innerHTML = mainHtml;
+                songListArea.appendChild(songItem);
+
+                if (isFes) {
+                    const singersWrap = document.getElementById(`prevSingers_${idNum}`);
+                    const checkboxes = block.querySelectorAll(`input[name="singer_${idNum}"]:checked`);
+
+                    checkboxes.forEach(cb => {
+                        if (cb.value && cb.value.trim() !== "") {
+                            const singerBadge = document.createElement('div');
+                            let singerClass = '';
+
+                            if (cb.value === "全員") {
+                                singerClass = 'singer-all';
+                            } else {
+                                const sId = parseInt(cb.getAttribute('data-singer-id'), 10);
+                                const colorIndex = ((sId - 1) % 8) + 1;
+                                singerClass = `singer-color-${colorIndex}`;
+                            }
+
+                            singerBadge.className = `prev-badge badge-singer ${singerClass}`;
+                            singerBadge.innerHTML = cb.value.replace(/＆/g, '＆<br>').replace(/&/g, '&<br>');
+                            singersWrap.appendChild(singerBadge);
+                        }
+                    });
+                }
+
+                displayIndex++;
+            });
+
+            saveCurrentData();
+            return displayIndex > 1;
+        }
+
+        function copySetlistText() {
+            let titleEl = document.getElementById('prevLiveTitle');
+            let titleText = titleEl ? titleEl.innerText.replace(/\n/g, ' ') : "LIVE SETLIST";
+            let text = `【${titleText}】\n`;
+
+            let timeBadge = document.getElementById('prevLiveTimeBadge');
+            let venueEl = document.getElementById('prevDateVenue');
+            let venueText = venueEl ? venueEl.innerText : "";
+
+            let isTimeBadgeVisible = timeBadge && window.getComputedStyle(timeBadge).display !== 'none';
+
+            if (venueText || isTimeBadgeVisible) {
+                if (venueText) text += `${venueText} `;
+                if (isTimeBadgeVisible) text += `(${timeBadge.innerText}公演)`;
+                text += `\n\n`;
+            } else {
+                text += `\n`;
+            }
+
+            const isFes = document.querySelector('input[name="liveType"]:checked').value === 'fes';
+            let displayIndex = 1;
+            let hasOutputEncore = false;
+
+            document.querySelectorAll('#setlistContainer .song-block').forEach((block) => {
+                const idNum = block.id.split('_')[1];
+                const mode = block.querySelector(`input[name="mode_${idNum}"]:checked`).value;
+                const isEncore = document.getElementById(`encore_${idNum}`).checked;
+
+                let finalTitle = "", coverArtist = "";
+                if (mode === 'normal') {
+                    finalTitle = document.getElementById(`songSelect_${idNum}`).value;
+                    if (typeof songList !== 'undefined') {
+                        const sData = songList.find(s => s.name === finalTitle);
+                        if (sData && sData.subInfo) coverArtist = sData.subInfo;
+                    }
+                } else {
+                    finalTitle = document.getElementById(`songInput_${idNum}`).value;
+                    coverArtist = document.getElementById(`artistName_${idNum}`).value;
+                }
+
+                if (!finalTitle.trim()) return;
+
+                let songLine = "";
+                if (isEncore && !hasOutputEncore) {
+                    songLine = `En.\n`;
+                    hasOutputEncore = true;
+                }
+
+                songLine += `${displayIndex.toString().padStart(2, '0')}. ${finalTitle}`;
+                if (document.getElementById(`acoustic_${idNum}`).checked) songLine += ` (アコースティックver.)`;
+                if (coverArtist) songLine += `／${coverArtist}`;
+
+                if (isFes) {
+                    const checkedSingers = [];
+                    const checkboxes = block.querySelectorAll(`input[name="singer_${idNum}"]:checked`);
+                    checkboxes.forEach(cb => {
+                        if (cb.value && cb.value.trim() !== "") checkedSingers.push(cb.value.trim());
+                    });
+                    if (checkedSingers.length > 0) {
+                        songLine += ` - ${checkedSingers.join('＆')}`;
+                    }
+                }
+
+                text += `${songLine}\n`;
+                displayIndex++;
+            });
+
+            if (displayIndex === 1) return alert("コピーする曲がありません。");
+            navigator.clipboard.writeText(text).then(() => alert("クリップボードにコピーしました。")).catch(() => alert("コピーに失敗しました。"));
+        }
+
+        function generateSetlistImage() {
+            if (!renderPreviewBeforeCapture()) return alert("曲が入力されていません。");
+
+            const previewArea = document.getElementById('setlistPreviewContainer');
+
+            // 修正: プレビュー画面が通常表示されているため、一時的な非表示化や位置変更（fixed化）の処理を削除しました。
+
+            html2canvas(previewArea, { scale: 2, logging: false, useCORS: true }).then(canvas => {
+                const finalImg = document.createElement('img');
+                finalImg.src = canvas.toDataURL("image/png");
+                document.getElementById('finalImagePlace').innerHTML = "";
+                document.getElementById('finalImagePlace').appendChild(finalImg);
+                document.getElementById('generatedImageArea').style.display = 'flex';
+                // 修正: 画像生成後の復元処理（absolute化）も削除しました。
+            }).catch(err => {
+                alert("生成に失敗しました。");
+            });
+        }
+
+        function closeImageArea() { document.getElementById('generatedImageArea').style.display = 'none'; }
+
+        window.onload = function () {
+            const isLoaded = loadSavedData();
+
+            if (!isLoaded) {
+                addGlobalSingerInput("平山笑美");
+                addGlobalSingerInput("愛内里菜");
+                addGlobalSingerInput("");
+
+                for (let i = 0; i < 5; i++) {
+                    addSongBlock();
+                }
+            }
+
+            renderPreviewBeforeCapture();
+        };
+    </script>
+</body>
+
+</html>
