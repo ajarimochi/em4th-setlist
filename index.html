@@ -15,10 +15,11 @@
            1. カラーテーマ（ブルー固定）
         ========================================= */
         :root {
-            --theme-bg-gradient: linear-gradient(145deg, #0c004f, #001369, #e10000);
+            --theme-bg-gradient: linear-gradient(145deg, #060044, #3d3471, #e10000);
+            /* , #e10000 */
             --theme-title-highlight: linear-gradient(transparent 60%, rgba(111, 177, 252, 0.4) 60%);
             --theme-badge-shadow: rgba(67, 100, 247, 0.6);
-            --theme-num-bg: #ffb13c;
+            --theme-num-bg: #cb9b51;
         }
 
         .taiban-song {
@@ -241,9 +242,12 @@
             font-weight: inherit;
             margin: 0;
             line-height: 1.2;
+            font-size: 2rem;
+            text-shadow: 0 0 10px #515151,0 0 15px  #515151;
         }
         #prevLiveTitle h2 {
             margin-bottom: 5px;
+            text-shadow: 0 0 10px #515151,0 0 15px  #515151;
         }
 
         #prevLiveTitle h2 {
@@ -309,22 +313,23 @@
         }
 
         .prev-date-venue {
-            background-color: #1E293B;
+            background-color: #F26201;
             color: #FFFFFF;
             font-size: 11px;
             font-weight: 700;
-            padding: 4px 12px;
-            border-radius: 4px;
+            padding: 4px 40px;
         }
 
         .prev-encore-label {
             align-self: flex-start;
             margin-top: 10px;
             margin-bottom: 0px;
+            
         }
 
         .prev-song-list {
-            background-color: #ffffff82; /* 白背景をここに移動 */
+            font-family: 'Yuji Syuku', 'Yu Mincho', 'YuMincho', 'Hiragino Mincho ProN', serif;
+            background-color: #ffffff40; /* 白背景をここに移動 */
             display: flex; 
             flex-direction: column;
             padding: 12px; /* 背景色がつくため、文字がフチに付かないよう内側余白を追加 */
@@ -337,7 +342,7 @@
             align-items: center;
             gap: 12px;
             padding: 8px 0;
-            border-bottom: 1px dashed #E2E8F0;
+            border-bottom: 1px solid var(--theme-num-bg);
         }
 
         .prev-song-item:last-child {
@@ -358,9 +363,10 @@
         }
 
         .prev-song-num-val {
-            color: #ff8400;
+            /* color: #ff8400; */
+            color: var(--theme-num-bg);
             font-weight: 800;
-            font-size: 12px;
+            font-size: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -383,8 +389,8 @@
 
         .prev-song-title {
             font-size: 15px;
-            font-weight: 700;
-            color: #0F172A;
+            /* font-weight: 700; */
+            color: #fff;
             line-height: 1.2;
             display: flex;
             align-items: center;
@@ -400,7 +406,7 @@
 
         .prev-badge {
             font-size: 9px;
-            font-weight: 800;
+            /* font-weight: 800; */
             padding: 2px 6px;
             border-radius: 4px;
             white-space: nowrap;
@@ -431,15 +437,15 @@
         }
 
         .singer-color-1 {
-            background-color: #f74b17;
+            background-color: #F26201;
         }
 
         .singer-color-2 {
-            background-color: #1c149b;
+            background-color: #3d3471;
         }
 
         .singer-color-3 {
-            background-color: #fd7e14;
+            background-color: #28a745;
         }
 
         .singer-color-4 {
@@ -568,11 +574,8 @@
             <div class="prev-inner">
                 <div class="prev-header">
                     <!-- ▼ 公演情報はここで直接HTML編集してください ▼ -->
-                    <!-- <div class="prev-title" id="prevLiveTitle"><h2>平山笑美 4th Oneman Live</h2><h1>錦秋ノ一閃</h1></div> -->
-                    <div class="prev-title" id="prevLiveTitle">
-                        <h2>4th Oneman Live</h2>
-                        <h1>錦秋ノ一閃</h1>
-                    </div>
+                    <div class="prev-title" id="prevLiveTitle"><h2>平山笑美 4th Oneman Live</h2><h1>錦秋ノ一閃</h1></div>
+                    
                     <div class="prev-details">
                         <div class="prev-date-wrap">
                             <!-- 昼夜の区分が不要な場合はこの span を削除、または display:none にしてください -->
